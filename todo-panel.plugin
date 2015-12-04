@@ -1,0 +1,10 @@
+[Plugin]
+Loader=python3
+Module=todo
+IAge=3
+Name=TODO panel
+Description=List of TODOs in the side/bottom panel
+Authors=Andriy Zasypkin
+Copyright=Copyright © 2015 Andriy Zasypkin
+Website=https://github.com/andy29485/todo-panel
+Version=0.1.0
