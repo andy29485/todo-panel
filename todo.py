@@ -2,6 +2,7 @@
 
 from gi.repository import GObject, Gedit, Gtk, PeasGtk
 import os
+from widget import TodoPanel
 
 class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
   __gtype_name__      = 'TodoPanel'
@@ -16,18 +17,17 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     GObject.Object.__init__(self)
     self.allowed_extensions = re.split('[\\s\\.;\\|:]', self.allowed_extensions)
     self.allowed_types      = re.split('[\\s\\.;\\|:]', self.allowed_types)
+    self.panel              = TodoPanel(self.window, self.matches)
 
   def do_activate(self):
-    #TODO
-    icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
-    self._side_widget = Gtk.Label("This is the bottom panel.")
-    panel = self.window.get_bottom_panel()
-    panel.add_item(self._side_widget, "TodoBottomPanel", "TODO List", icon)
-    panel.activate_item(self._side_widge
+    icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU) #TODO set
+    bottom = self.window.get_bottom_panel()                           #  icon
+    bottom.add_item(self.panel, "TodoBottomPanel", "TODO List", icon)
+    bottom.activate_item(self.panel)
 
   def do_deactivate(self):
-    panel = self.window.get_side_panel()
-    panel.remove_item(self._side_widget)
+    bottom = self.window.get_bottom_panel()
+    bottom.remove_item(self.panel)
 
   def do_create_configure_widget(self):
     #TODO figure out how this is done and maybe do it?
@@ -37,7 +37,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     self.walk()
 
   def update_dirs(self):
-    l1 = [] #TODO get list of dirs - cononical paths
+    l1 = [doc.get_uri_for_display().rpartition('/')[0]
+          for doc in self.window.get_documents()]
     l1 = list(set(l1))
     l2 = l1[:]
     for i in range(len(l1)):
@@ -47,7 +48,6 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     self.dirs = l2
 
   def walk(self):
-    self.matches
     matchregex = '^(.*?)({})(:|\\s*-)\\s*(.*?)(\n|$)'.format(
                    '|'.join(self.allowed_types))
     for d in self.dirs:
@@ -58,7 +58,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
               line = 0
               for i in re.findall(matchregex, f.read(), re.DOTALL|re.MULTILINE):
                 line += len(i[0].split('\n'))
-                matches[i[1]].append((line, i[3]))
+                matches[i[1]].append((file, line, i[3]))
                 line += 1 #TODO may need to remove
 
   def on_tab_added(self, window, tab, data=None):
