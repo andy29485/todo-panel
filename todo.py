@@ -18,8 +18,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     self.allowed_extensions = re.split('[\\s\\.;\\|:]', self.allowed_extensions)
     self.allowed_types      = re.split('[\\s\\.;\\|:]', self.allowed_types)
     for i in self.allowed_types:
-      self.matches[i] = []
-    self.panel              = TodoPanel(self.window, self.matches)
+      self.matches[i] = {}
+    self.panel = TodoPanel(self.window, self.matches)
 
   def do_activate(self):
     icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU) #TODO set
@@ -51,19 +51,22 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     self.dirs = l2
 
   def walk(self):
-    matchregex = '^(.*?)({})(:|\\s*-)\\s*(.*?)(\n|$)'.format(
-                   '|'.join(self.allowed_types))
+    matchre = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format(
+                          '|'.join(self.allowed_types))
     for d in self.dirs:
       for root, dirs, files in os.walk(d):
         for file in files:
           for ext in self.allowed_extensions:
             if file.endswith('.'+ext):
-              with open(file, 'r') as f:
+              fi = 'file://'+os.path.join(root, file)
+              with open(fi, 'r') as f:
                 line = 0
-                for i in re.findall(matchregex, f.read(), re.DOTALL|re.MULTILINE):
+                for i in re.findall(matchre, f.read(), re.DOTALL|re.MULTILINE):
                   line += len(i[0].split('\n'))
-                  self.matches[i[1]].append((file, line, i[3]))
-                  line += 1 #TODO may need to remove
+                  if fi in matches[i[1]].keys():
+                    self.matches[i[1]][fi].append((line, i[3]))
+                  else:
+                    self.matches[i[1]][fi] = [(line, i[3])]
 
   def on_tab_added(self, window, tab, data=None):
     self.do_update_state()
