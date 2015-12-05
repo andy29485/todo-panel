@@ -61,8 +61,9 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
         for file in files:
           for ext in self.allowed_extensions:
             if file.endswith('.'+ext):
-              fi = 'file://'+os.path.join(root, file)
+              fi = os.path.join(root, file)
               with open(fi, 'r') as f:
+                fi = 'file://'+fi
                 line = 0
                 for i in re.findall(matchre, f.read(), re.DOTALL|re.MULTILINE):
                   line += len(i[0].split('\n'))
