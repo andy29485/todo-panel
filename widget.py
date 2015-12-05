@@ -2,10 +2,11 @@
 
 from gi.repository import Gtk, Gio
 import os, re
+from operator import itemgetter
 
-class TodoPanel(Gtk.Box):
+class TodoPanel(Gtk.Notebook):
   def __init__(self, window, matches):
-    Gtk.Box.__init__(self)
+    Gtk.Notebook.__init__(self)
     self.window  = window
     self.matches = matches
     self.buttons1 = []
@@ -50,12 +51,7 @@ class TodoPanel(Gtk.Box):
 
     self.key_type = key
 
-  def on_button1_clicked(self, button):
-    #this is the match key to use
-    key = re.sub('\\s+\\d+$', '', button.get_label())
-    self.set_type(key)
-
-  def on_button2_clicked(self, button):
+  def on_button_clicked(self, button):
     file = 'file://' + button.get_var()
     line = int(re.search('^.*? (\\d+)(: .*?)?$', button.get_label()).group(1))
     for doc in self.window.get_documents():
@@ -72,13 +68,32 @@ class TodoPanel(Gtk.Box):
                                          Gedit.encoding_get_current(),
                                          int(line), 0, False, True)
 
-class Button(Gtk.Button):
-  def __init__(self, var=None):
-    Gtk.Button.__init__(self)
-    self.var = var
+class Page(Gtk.ScrolledWindow):
+  def __init__(self, name, match):
+    Gtk.ScrolledWindow.__init__(self)
+    self.name    = name
+    self.match   = match
+    self.flowbox = Gtk.FlowBox()
+    self.flowbox.set_valign(Gtk.Align.START)
+    self.flowbox.set_max_children_per_line(30)
+    self.html = '<a href="{0}#{1}"><tr><td>{1}</td><td>{2}</td></tr></a>'
+    self.file_label = Gtk.Label()
+    self.file_label.set_width_chars(-1)
+    self.file_label.set_ellipsize(True)
+    self.update()
 
-  def get_var(self):
-    return self.var
+  def update(self):
+    label_html = ''
+    for file_uri in sorted(self.match.keys()):
+      label_html += '<b>{}</b><table>'.format(self.name.rpartition('/')[2])
+      for line, text in sorted(elf.match[file_uri]):
+        label_html += self.html.format(file_uri, line, text)
+      label_html += '</table>'
+    self.file_label.set_lines(len(label_html.split('<tr>')))
+    self.file_label.set_markup(label_html)
 
-  def set_var(self, var):
-    self.var = var
+  def get_name(self):
+    return self.name
+
+  def set_name(self, name):
+    self.name = name
