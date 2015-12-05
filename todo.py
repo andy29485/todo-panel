@@ -30,6 +30,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     bottom.remove_item(self.panel)
 
   def do_create_configure_widget(self):
+    pass
     #TODO figure out how this is done and maybe do it?
 
   def do_update_state(self):

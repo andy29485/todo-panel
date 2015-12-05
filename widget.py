@@ -17,13 +17,13 @@ class TodoPanel(Gtk.Window):
     self.add(self.box)
     #TODO - get buttons to look pretty
 
-    for i in matches.keys():
+    for i in list(matches.keys()):
       button = Gtk.Button(label='{} {}'.format(i, len(matches[i])))
       button.connect("clicked", self.on_button1_clicked)
       self.buttons1.append(button)
       self.box.pack_start(button, True, True, 0)
 
-    self.set_type(matches.keys()[0])
+    self.set_type(list(matches.keys())[0])
     #button = Gtk.LinkButton("http://www.gtk.org", "Visit GTK+ Homepage")
     #self.add(button)
 
@@ -40,7 +40,7 @@ class TodoPanel(Gtk.Window):
       self.box1.remove(button)
       del button
 
-    for comment in list(sorted(self.matches[key].keys())):
+    for comment in list(sorted(self.matches[key])):
       b = Button()
       if i[2]:
         b.set_label('{} {}: {}'.format(i[0].rpartition('/')[2], i[1], i[2]))
@@ -79,8 +79,8 @@ class Button(Gtk.Button):
     Gtk.Button.__init__(self)
     self.var = var
 
-  get_var(self):
+  def get_var(self):
     return self.var
 
-  set_var(self, var):
+  def set_var(self, var):
     self.var = var
