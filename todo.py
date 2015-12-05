@@ -54,15 +54,15 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     matchregex = '^(.*?)({})(:|\\s*-)\\s*(.*?)(\n|$)'.format(
                    '|'.join(self.allowed_types))
     for d in self.dirs:
-      for root, dirs, files in os.walk("."):
+      for root, dirs, files in os.walk(d):
         for file in files:
           for ext in self.allowed_extensions:
-            if file.endswith(ext):
+            if file.endswith('.'+ext):
               with open(file, 'r') as f:
                 line = 0
                 for i in re.findall(matchregex, f.read(), re.DOTALL|re.MULTILINE):
                   line += len(i[0].split('\n'))
-                  matches[i[1]].append((file, line, i[3]))
+                  self.matches[i[1]].append((file, line, i[3]))
                   line += 1 #TODO may need to remove
 
   def on_tab_added(self, window, tab, data=None):
