@@ -17,6 +17,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     GObject.Object.__init__(self)
     self.allowed_extensions = re.split('[\\s\\.;\\|:]', self.allowed_extensions)
     self.allowed_types      = re.split('[\\s\\.;\\|:]', self.allowed_types)
+    for i in self.allowed_types:
+      self.matches[i] = []
     self.panel              = TodoPanel(self.window, self.matches)
 
   def do_activate(self):
