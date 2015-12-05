@@ -22,8 +22,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     self.panel = TodoPanel(self.window, self.matches)
 
   def do_activate(self):
-    icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU) #TODO set
-    bottom = self.window.get_bottom_panel()                           #  icon
+    icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
+    bottom = self.window.get_bottom_panel()
     bottom.add_item(self.panel, "TodoBottomPanel", "TODO List", icon)
     bottom.activate_item(self.panel)
 
