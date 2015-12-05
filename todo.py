@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from gi.repository import GObject, Gedit, Gtk, PeasGtk
-import os
+import os, re
 from widget import TodoPanel
 
 class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
@@ -54,7 +54,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     for d in self.dirs:
       for root, dirs, files in os.walk("."):
         for file in files:
-          if re.search('({})'.format('|'.join(self.allowed_extensions), file):
+          if re.search('({})'.format('|'.join(self.allowed_extensions)), file):
             with open(file, 'w') as f:
               line = 0
               for i in re.findall(matchregex, f.read(), re.DOTALL|re.MULTILINE):
