@@ -67,7 +67,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                 line = 0
                 for i in re.findall(matchre, f.read(), re.DOTALL|re.MULTILINE):
                   line += len(i[0].split('\n'))
-                  if fi in matches[i[1]].keys():
+                  if fi in self.matches[i[1]].keys():
                     self.matches[i[1]][fi].append((line, i[3]))
                   else:
                     self.matches[i[1]][fi] = [(line, i[3])]

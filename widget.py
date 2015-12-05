@@ -11,7 +11,6 @@ class TodoPanel(Gtk.Notebook):
     self.matches = matches
     self.pages = []
 
-    self.add(self.box)
     #TODO - put pages in notebook
     for match in matches.keys():
       page = Page(match, matches[match])
@@ -66,7 +65,7 @@ class Page(Gtk.ScrolledWindow):
     self.file_label = Gtk.Label()
     self.file_label.set_width_chars(-1)
     self.file_label.set_ellipsize(True)
-    self.add(file_label)
+    self.add(self.file_label)
     self.update()
 
   def update(self):
