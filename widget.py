@@ -87,3 +87,7 @@ class Page(Gtk.ScrolledWindow):
 
   def set_match(self, match):
     self.match = match
+
+  def on_activate_link(label, uri, data):
+    pass
+    #TODO
