@@ -71,9 +71,3 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
                     self.matches[i[1]][fi].append((line, i[3]))
                   else:
                     self.matches[i[1]][fi] = [(line, i[3])]
-
-  def on_tab_added(self, window, tab, data=None):
-    self.do_update_state()
-
-  def on_tab_removed(self, window, tab, data=None):
-    self.do_update_state()
