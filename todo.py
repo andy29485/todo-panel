@@ -54,13 +54,14 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     for d in self.dirs:
       for root, dirs, files in os.walk("."):
         for file in files:
-          if re.search('({})'.format('|'.join(self.allowed_extensions)), file):
-            with open(file, 'w') as f:
-              line = 0
-              for i in re.findall(matchregex, f.read(), re.DOTALL|re.MULTILINE):
-                line += len(i[0].split('\n'))
-                matches[i[1]].append((file, line, i[3]))
-                line += 1 #TODO may need to remove
+          for ext in self.allowed_extensions:
+            if file.endswith(ext):
+              with open(file, 'w') as f:
+                line = 0
+                for i in re.findall(matchregex, f.read(), re.DOTALL|re.MULTILINE):
+                  line += len(i[0].split('\n'))
+                  matches[i[1]].append((file, line, i[3]))
+                  line += 1 #TODO may need to remove
 
   def on_tab_added(self, window, tab, data=None):
     self.do_update_state()
