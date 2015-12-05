@@ -54,6 +54,19 @@ class Page(Gtk.ScrolledWindow):
   def set_match(self, match):
     self.match = match
 
-  def on_activate_link(label, uri, data):
-    pass
-    #TODO
+  def on_activate_link(page, uri, data):
+    file_uri = uri.rpartition('#')[0]
+    line     = int(uri.rpartition('#')[2])
+    for doc in self.window.get_documents():
+      doc_uri = 'file://%s' % doc.get_uri_for_display()
+      if 'file://"'+doc.get_uri_for_display() == file_uri:
+        tab = Gedit.Tab.get_from_document(doc)
+        view = tab.get_view()
+        self.window.set_active_tab(tab)
+        doc.goto_line(int(line))
+        view.scroll_to_cursor()
+        return
+    file_uri = Gio.file_new_for_uri(file)
+    self.window.create_tab_from_location(file_uri,
+                                         Gedit.encoding_get_current(),
+                                         int(line), 0, False, True)
