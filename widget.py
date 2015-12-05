@@ -9,29 +9,18 @@ class TodoPanel(Gtk.Notebook):
     Gtk.Notebook.__init__(self)
     self.window  = window
     self.matches = matches
-    self.buttons1 = []
-    self.buttons2 = []
+    self.pages = []
 
-    self.box = Gtk.Box()
     self.add(self.box)
-    #TODO - get buttons to look pretty
+    #TODO - put pages in notebook
+    for match in matches.keys():
+      page = Page(match, matches[match])
+      self.pages.append(page)
+      self.append_page(page, page.get_name())
 
-    for i in list(matches.keys()):
-      button = Gtk.Button(label='{} {}'.format(i, len(matches[i])))
-      button.connect("clicked", self.on_button1_clicked)
-      self.buttons1.append(button)
-      self.pack_start(button, True, True, 0)
-
-    self.set_type(list(matches.keys())[0])
-    #button = Gtk.LinkButton("http://www.gtk.org", "Visit GTK+ Homepage")
-    #self.add(button)
-
-  def update(self, matches):
-    self.matches = matches
-    for button in self.buttons1:
-      key = re.sub('\\s+\\d+$', '', button.get_label())
-      button.set_label('{} {}'.format(key, len(self.matches[key])))
-    self.set_type(self.key_type)
+  def update(self):
+    for page in self.pages:
+      page.update()
 
   def set_type(self, key):
     for button in self.buttons2:
@@ -69,17 +58,15 @@ class TodoPanel(Gtk.Notebook):
                                          int(line), 0, False, True)
 
 class Page(Gtk.ScrolledWindow):
-  def __init__(self, name, match):
+  def __init__(self, name="", match={}):
     Gtk.ScrolledWindow.__init__(self)
-    self.name    = name
+    self.name    = Gtk.Label(name)
     self.match   = match
-    self.flowbox = Gtk.FlowBox()
-    self.flowbox.set_valign(Gtk.Align.START)
-    self.flowbox.set_max_children_per_line(30)
     self.html = '<a href="{0}#{1}"><tr><td>{1}</td><td>{2}</td></tr></a>'
     self.file_label = Gtk.Label()
     self.file_label.set_width_chars(-1)
     self.file_label.set_ellipsize(True)
+    self.add(file_label)
     self.update()
 
   def update(self):
@@ -96,4 +83,7 @@ class Page(Gtk.ScrolledWindow):
     return self.name
 
   def set_name(self, name):
-    self.name = name
+    self.name = Gtk.Label(name)
+
+  def set_match(self, match):
+    self.match = match

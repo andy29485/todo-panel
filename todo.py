@@ -37,7 +37,10 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
 
   def do_update_state(self):
     self.update_dirs()
+    for i in self.allowed_types:
+      self.matches[i] = {}
     self.walk()
+    self.panel.update()
 
   def update_dirs(self):
     l1 = [doc.get_uri_for_display().rpartition('/')[0]
