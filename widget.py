@@ -22,8 +22,6 @@ class TodoPanel(Gtk.Box):
       self.pack_start(button, True, True, 0)
 
     self.set_type(list(matches.keys())[0])
-    #button = Gtk.LinkButton("http://www.gtk.org", "Visit GTK+ Homepage")
-    #self.add(button)
 
   def update(self, matches):
     self.matches = matches
