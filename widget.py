@@ -3,17 +3,15 @@
 from gi.repository import Gtk, Gio
 import os, re
 
-class TodoPanel(Gtk.Window):
+class TodoPanel(Gtk.Box):
   def __init__(self, window, matches):
-    Gtk.Window.__init__(self)
+    Gtk.Box.__init__(self)
     self.window  = window
     self.matches = matches
     self.buttons1 = []
     self.buttons2 = []
 
-    self.box  = Gtk.Box()
-    self.box1 = Gtk.Box()
-    self.box.add(self.box1)
+    self.box = Gtk.Box()
     self.add(self.box)
     #TODO - get buttons to look pretty
 
@@ -21,7 +19,7 @@ class TodoPanel(Gtk.Window):
       button = Gtk.Button(label='{} {}'.format(i, len(matches[i])))
       button.connect("clicked", self.on_button1_clicked)
       self.buttons1.append(button)
-      self.box.pack_start(button, True, True, 0)
+      self.pack_start(button, True, True, 0)
 
     self.set_type(list(matches.keys())[0])
     #button = Gtk.LinkButton("http://www.gtk.org", "Visit GTK+ Homepage")
@@ -37,7 +35,7 @@ class TodoPanel(Gtk.Window):
   def set_type(self, key):
     for button in self.buttons2:
       self.buttons2.remove(button)
-      self.box1.remove(button)
+      self.box.remove(button)
       del button
 
     for comment in list(sorted(self.matches[key])):
@@ -48,7 +46,7 @@ class TodoPanel(Gtk.Window):
         b.set_label('{} {}'.format(i[0].rpartition('/')[2], i[1]))
       b.connect("clicked", self.on_button2_clicked)
       self.buttons2.append(b)
-      self.box1.pack_start(b, True, True, 0)
+      self.box.pack_start(b, True, True, 0)
 
     self.key_type = key
 
