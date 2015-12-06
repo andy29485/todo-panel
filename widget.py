@@ -24,30 +24,22 @@ class TodoPanel(Gtk.Notebook):
 class Page(Gtk.ScrolledWindow):
   def __init__(self, name="", match={}):
     Gtk.ScrolledWindow.__init__(self)
-    self.name    = Gtk.Label(name)
-    self.match   = match
-    self.html = '<a href="{0}#{1}"><tr><td>{1}</td><td>{2}</td></tr></a>'
-    self.file_label = Gtk.Label()
-    self.file_label.set_width_chars(-1)
-    self.file_label.set_ellipsize(True)
-    self.add(self.file_label)
-    self.update()
+    self.file_tables = []
+    self.matches     = 0
+    self.match       = match
+    self.name        = name
 
   def update(self):
-    label_html = ''
-    for file_uri in sorted(self.match.keys()):
-      label_html += '<b>{}</b><table>'.format(self.name.rpartition('/')[2])
-      for line, text in sorted(elf.match[file_uri]):
-        label_html += self.html.format(file_uri, line, text)
-      label_html += '</table>'
-    self.file_label.set_lines(len(label_html.split('<tr>')))
-    self.file_label.set_markup(label_html)
+    for table in self.file_tables:
+      self.remove(table)
+    self.file_tables = []
+
 
   def get_name(self):
-    return self.name
+    return Gtk.Label('{}: {}'.format(self.name, self.matches))
 
   def set_name(self, name):
-    self.name = Gtk.Label(name)
+    self.name = name
 
   def set_match(self, match):
     self.match = match
