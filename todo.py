@@ -51,10 +51,14 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
           for doc in self.window.get_documents()]
     l1 = list(set(l1))
     l2 = l1[:]
+
+    minus = 0
+
     for i in range(len(l1)):
       for j in range(len(l2)):
         if l2[j].startswith(l1[i]) and l1[i] != l1[j]:
-          l2.remove(l2[j])
+          l2.remove(l2[j-minus])
+          minus += 1
     self.dirs = l2
 
   def walk(self):

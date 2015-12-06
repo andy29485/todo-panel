@@ -25,35 +25,42 @@ class TodoPanel(Gtk.Notebook):
 class Page(Gtk.ScrolledWindow):
   def __init__(self, name="", match={}, window=None):
     Gtk.ScrolledWindow.__init__(self)
-    self.window      = window
-    self.file_tables = []
-    self.matches     = 0
-    self.match       = match
-    self.name        = name
-    self.label       = Gtk.Label('{}: {}'.format(self.name, self.matches))
+    self.window  = window
+    self.buttons = []
+    self.matches = 0
+    self.match   = match
+    self.name    = name
+    self.grid    = Gtk.Grid()
+    self.label   = Gtk.Label('{}: {}'.format(self.name, self.matches))
+    self.add(self.grid)
 
-  def update(self):
-    for table in self.file_tables:
-      self.remove(table)
-    self.file_tables = []
-    self.matches     = 0
+  def update(self):#TODO
+    if self.grid.get_child_at(0,0):
+      self.grid.remove_column(0)
+    for button in self.buttons:
+      del button
+    self.buttons = []
+    self.matches = 0
 
-    button = Gtk.LinkButton()
-    i=0
-    for file in self.match.keys():
-      table = Gtk.Grid()
+    i=-1
+    for j in range(len(list(self.match.keys()))):
+      file = list(self.match.keys())[j]
+      i += 1
+      if j != 0:
+        self.grid.attach(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL),
+                        0, i, 1, 1)
+        i += 1
       path = file.partition('://')[2]
       name = os.path.basename(path)
-      button = Button(self.window, name, path)
-      table.attach(button, 0, i, 1, 1)
+      button = Button(self.window, name, file)
+      self.grid.attach(button, 0, i, 1, 1)
+      self.buttons.append(button)
       for line, comment in self.match[file]:
         i += 1
-        button = Button(self.window, comment, path, line)
-        table.attach(button, 0, i, 1, 1)
+        button = Button(self.window, comment, file, line)
+        self.grid.attach(button, 0, i, 1, 1)
+        self.buttons.append(button)
         self.matches += 1
-      i += 1
-      self.add(table)
-      self.file_tables.append(table)
     self.label.set_text('{}: {}'.format(self.name, self.matches))
     self.show_all()
 
@@ -71,63 +78,41 @@ class Page(Gtk.ScrolledWindow):
     return self.name
 
 
-class Button(Gtk.Label):
+class Button(Gtk.EventBox):
   def __init__(self, window, comment, file=None, line=None):
-    Gtk.Label.__init__(self)
+    Gtk.EventBox.__init__(self)
     self.window  = window
-    self.comment = comment
     self.file    = file
     self.line    = line
-    self.update()
-
-  def set_file(self, file):
-    self.file = file
-    self.update()
-
-  def get_file(self):
-    return self.file
-
-  def set_line(self, line):
-    self.line = line
-    self.update()
-
-  def get_line(self):
-    return self.line
-
-  def set_comment(self, comment):
-    self.comment = comment
-    self.update()
-
-  def get_comment(self):
-    return comment
-
-  def update(self):
-    html = '<a href="{link}">{text}</a>'
-    if self.file:
-      if self.line:
-        link = 'file://{}#{}'.format(self.file, self.line)
+    self.label   = Gtk.Label()
+    self.label.set_justify(Gtk.Justification.LEFT)
+    self.label.set_ellipsize(True)
+    self.label.set_alignment(xalign=0, yalign=0.5)
+    if self.line:
+      if comment:
+        self.label.set_text('{:10}: {}'.format(self.line, comment))
       else:
-        link = '?{}'.format(self.file)
-      self.set_markup(html.format(link=link, text=self.comment))
+        self.label.set_markup('{:10}: <u>EMPTY</u>'.format(self.line))
+      self.line -= 1
     else:
-      self.set_text(self.comment)
+      if comment:
+        self.label.set_text(comment)
+      else:
+        self.label.set_markup('<u>EMPTY</u>')
+      self.line = 0
+    self.add(self.label)
+    self.connect('button_press_event', self.click)
 
-  def do_activate_link(self, uri):
-    if uri.startswith('?'):
-      file_uri = 'file://'+uri.partition('?')[2]
-      line     = 0
-    else:
-      file_uri = uri.rpartition('#')[0]
-      line     = int(uri.rpartition('#')[2])-1
+  def click(self, eventbox, event):
     for doc in self.window.get_documents():
-      if 'file://'+doc.get_uri_for_display() == file_uri:
+      if 'file://'+doc.get_uri_for_display() == self.file:
         tab = Gedit.Tab.get_from_document(doc)
         view = tab.get_view()
         self.window.set_active_tab(tab)
-        doc.goto_line(line)
+        doc.goto_line(self.line)
         view.scroll_to_cursor()
         return
-    file_uri = Gio.file_new_for_uri(file)
+    file_uri = Gio.file_new_for_uri(self.file)
     self.window.create_tab_from_location(file_uri,
                                          Gedit.encoding_get_current(),
-                                         line, 0, False, True)
+                                         self.line, 0, False, True)
