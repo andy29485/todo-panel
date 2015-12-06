@@ -21,6 +21,8 @@ files/lines.
 ## Screen shots
 ![Image of panal](/screenshots/1.png?raw=true "1")
 
+## TODO
+
 ###### Make it look nice
 - colours?
 - sizes?
