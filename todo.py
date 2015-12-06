@@ -19,17 +19,24 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     self.allowed_types      = re.split('[\\s\\.;\\|:]', self.allowed_types)
     for i in self.allowed_types:
       self.matches[i] = {}
-    self.panel = TodoPanel(self.window, self.matches)
+    self.widget = None
 
   def do_activate(self):
     icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
+    self.widget = TodoPanel(self.window, self.matches)
+    self.scroller = Gtk.ScrolledWindow()
+    self.scroller.set_property("hscrollbar-policy", Gtk.PolicyType.AUTOMATIC)
+    self.scroller.set_property("vscrollbar-policy", Gtk.PolicyType.AUTOMATIC)
+    self.scroller.add(self.widget)
+    self.scroller.show_all()
+
     bottom = self.window.get_bottom_panel()
-    bottom.add_item(self.panel, "TodoBottomPanel", "TODO List", icon)
-    bottom.activate_item(self.panel)
+    bottom.add_item(self.scroller, "TodoBottomPanel", _("TODO List"), icon)
+    bottom.activate_item(self.scroller)
 
   def do_deactivate(self):
     bottom = self.window.get_bottom_panel()
-    bottom.remove_item(self.panel)
+    bottom.remove_item(self.scroller)
 
   def do_create_configure_widget(self):
     pass
@@ -40,7 +47,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     for i in self.allowed_types:
       self.matches[i] = {}
     self.walk()
-    self.panel.update()
+    if self.widget:
+      self.widget.update()
 
   def update_dirs(self):
     l1 = [doc.get_uri_for_display().rpartition('/')[0]

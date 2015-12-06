@@ -1,54 +1,54 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, WebKit
 import os
 
 template_head='<a href="#{text}"><th>{text}: {num}</th></a>'
 template_body='<a href="{file}#{line}"><td>{line}</td><td>{text}</td></tr></a>'
 
-class TodoPanel(Gtk.Label):
-  def __init__(self, window, matches):
-    Gtk.Label.__init__(self)
+class TodoPanel(WebKit.WebView):
+  def __init__(self, window, matches, key='TODO'):
+    WebKit.WebView.__init__(self)
     self.window  = window
     self.matches = matches
-    self.page    = list(matches.keys())[0]
+    self.page    = key
 
   def update(self):
     head = '<table width=100%><tr>'
     body = ''
     for tag in self.matches.keys():
       count = 0
-      if tag = self.page:
+      if tag == self.page:
         body += '<table>'
-        for file in matches[tag].keys():
+        for file in self.matches[tag].keys():
           body += '<a href="?{path}"><tr><td colspan="2">{name}</td></tr></a>'
           path=file.partition('://')[2]
           body = body.format(path=path, name=os.path.basename(path))
-          for line, comment in matches[tag][file]:
+          for line, comment in self.matches[tag][file]:
             body += template_body.format(file=file, line=line, text=comment)
             count += 1
         body += '</table>'
       else:
-        for file in matches[tag].keys():
-          count += len(matches[tag][file])
+        for file in self.matches[tag].keys():
+          count += len(self.matches[tag][file])
       head += template_head.format(text=tag, num=count)
     head += '</tr></table>'
-    self.set_markup(head+body)
+    self.load_string('<html><body>'+head+body+'</html></body>',
+                     'text/html', 'utf-8', 'file://')
 
-  def on_activate_link(page, uri, data):
-    if uri.startswith('#'):
-      self.page = uri.partition('#')[2]
+  def on_navigation_request(self, page, frame, request):
+    if request.get_uri().startswith('#'):
+      self.page = request.get_uri().partition('#')[2]
       self.update()
       return
-    elif uri.startswith('?'):
-      file_uri = 'file://'+uri.partition('?')[2]
-      line     = 1
+    elif request.get_uri().startswith('?'):
+      file_uri = 'file://'+request.get_uri().partition('?')[2]
+      line     = 0
     else:
-      file_uri = uri.rpartition('#')[0]
-      line     = int(uri.rpartition('#')[2])
+      file_uri = request.get_uri().rpartition('#')[0]
+      line     = int(request.get_uri().rpartition('#')[2])-1
     for doc in self.window.get_documents():
-      doc_uri = 'file://%s' % doc.get_uri_for_display()
-      if 'file://"'+doc.get_uri_for_display() == file_uri:
+      if 'file://'+doc.get_uri_for_display() == file_uri:
         tab = Gedit.Tab.get_from_document(doc)
         view = tab.get_view()
         self.window.set_active_tab(tab)
