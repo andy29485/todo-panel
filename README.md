@@ -7,16 +7,15 @@ obsolete plugin.
 ## Authors/Contributors
 - Andriy Zasypkin
 
-## Notes
-This *should* work, but either I or the GEdit API have some errors. The widget
-window gets added to the bottom panel, and activated. The tab for this widget
-appears in the bottom panel, however no content is shown.
-  - It should be mentioned that a Gtk.Label does appear, if set as the widget.
-  - A Gtk.Notebook(as demonstrated [here]
-  (http://python-gtk-3-tutorial.readthedocs.org/en/latest/layout.html#notebook))
-  does not appear when set(and activated) as the widget
-
 ## TODO
+
+###### Get it to work...
+- links to files
+- links to comments - line in file
+
+###### Make it look nice
+- but first, get it to work
+
 ###### Allow for configuration
 - switch between the bottom and side panels
 - add(and choose) colour for tabs
