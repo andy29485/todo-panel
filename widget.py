@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from gi.repository import Gtk, Gio, WebKit
+import os
 
 class TodoPanel(Gtk.Notebook):
   def __init__(self, window, matches):
@@ -9,7 +10,6 @@ class TodoPanel(Gtk.Notebook):
     self.matches = matches
     self.pages = []
 
-    #TODO - put pages in notebook
     for match in matches.keys():
       page = Page(match, matches[match])
       self.pages.append(page)
@@ -33,7 +33,19 @@ class Page(Gtk.ScrolledWindow):
     for table in self.file_tables:
       self.remove(table)
     self.file_tables = []
+    self.matches     = 0
 
+    button = Gtk.LinkButton()
+    for file in match.keys():
+      table = Gtk.Grid()
+      path = file.partition('://')[2]
+      name = os.path.basename(path)
+      table.attach(Gtk.LinkButton('?'+path, name), 0, 0, 1, 1)
+      for line, comment in match[file]:
+        self.matches += 1
+        table.attach(Gtk.LinkButton(file+'#'+line, comment), 0, 0, 1, 1)
+      self.add(table)
+      self.file_tables.append(table)
 
   def get_name(self):
     return Gtk.Label('{}: {}'.format(self.name, self.matches))
@@ -45,11 +57,7 @@ class Page(Gtk.ScrolledWindow):
     self.match = match
 
   def do_activate_link(self, uri):
-    if uri.startswith('#'):
-      self.page = request.get_uri().partition('#')[2]
-      self.update()
-      return
-    elif uri.startswith('?'):
+    if uri.startswith('?'):
       file_uri = 'file://'+uri.partition('?')[2]
       line     = 0
     else:
