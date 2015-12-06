@@ -28,6 +28,7 @@ class Page(Gtk.ScrolledWindow):
     self.matches     = 0
     self.match       = match
     self.name        = name
+    self.label       = Gtk.Label('{}: {}'.format(self.name, self.matches))
 
   def update(self):
     for table in self.file_tables:
@@ -36,19 +37,21 @@ class Page(Gtk.ScrolledWindow):
     self.matches     = 0
 
     button = Gtk.LinkButton()
-    for file in match.keys():
+    for file in self.match.keys():
       table = Gtk.Grid()
       path = file.partition('://')[2]
       name = os.path.basename(path)
       table.attach(Gtk.LinkButton('?'+path, name), 0, 0, 1, 1)
-      for line, comment in match[file]:
+      for line, comment in self.match[file]:
         self.matches += 1
         table.attach(Gtk.LinkButton(file+'#'+line, comment), 0, 0, 1, 1)
       self.add(table)
       self.file_tables.append(table)
+    self.label.set_text('{}: {}'.format(self.name, self.matches))
 
   def get_name(self):
-    return Gtk.Label('{}: {}'.format(self.name, self.matches))
+    self.label.set_text('{}: {}'.format(self.name, self.matches))
+    return self.label
 
   def set_name(self, name):
     self.name = name
