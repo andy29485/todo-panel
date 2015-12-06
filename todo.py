@@ -19,17 +19,20 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     self.allowed_types      = re.split('[\\s\\.;\\|:]', self.allowed_types)
     for i in self.allowed_types:
       self.matches[i] = {}
-    self.panel = TodoPanel(self.window, self.matches)
+    self.widget = None
 
   def do_activate(self):
     icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
+    self.widget = TodoPanel(self.window, self.matches, self.allowed_types)
+    self.widget.show_all()
+
     bottom = self.window.get_bottom_panel()
-    bottom.add_item(self.panel, "TodoBottomPanel", "TODO List", icon)
-    bottom.activate_item(self.panel)
+    bottom.add_item(self.widget, "TodoBottomPanel", _("TODO List"), icon)
+    bottom.activate_item(self.widget)
 
   def do_deactivate(self):
     bottom = self.window.get_bottom_panel()
-    bottom.remove_item(self.panel)
+    bottom.remove_item(self.widget)
 
   def do_create_configure_widget(self):
     pass
@@ -40,17 +43,22 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     for i in self.allowed_types:
       self.matches[i] = {}
     self.walk()
-    self.panel.update()
+    if self.widget:
+      self.widget.update()
 
   def update_dirs(self):
     l1 = [doc.get_uri_for_display().rpartition('/')[0]
           for doc in self.window.get_documents()]
     l1 = list(set(l1))
     l2 = l1[:]
+
+    minus = 0
+
     for i in range(len(l1)):
       for j in range(len(l2)):
         if l2[j].startswith(l1[i]) and l1[i] != l1[j]:
-          l2.remove(l2[j])
+          l2.remove(l2[j-minus])
+          minus += 1
     self.dirs = l2
 
   def walk(self):

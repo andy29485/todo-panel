@@ -1,72 +1,118 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk, Gio
-import os, re
-from operator import itemgetter
+from gi.repository import Gtk, Gio, Gedit
+import os
 
 class TodoPanel(Gtk.Notebook):
-  def __init__(self, window, matches):
+  def __init__(self, window, matches, keys):
     Gtk.Notebook.__init__(self)
     self.window  = window
     self.matches = matches
     self.pages = []
 
-    #TODO - put pages in notebook
-    for match in matches.keys():
-      page = Page(match, matches[match])
+    for match in keys:
+      page = Page(match, matches[match], self.window)
       self.pages.append(page)
       self.append_page(page, page.get_name())
 
   def update(self):
     self.hide()
     for page in self.pages:
+      page.set_match(self.matches[page.get_match()])
       page.update()
     self.show()
 
 class Page(Gtk.ScrolledWindow):
-  def __init__(self, name="", match={}):
+  def __init__(self, name="", match={}, window=None):
     Gtk.ScrolledWindow.__init__(self)
-    self.name    = Gtk.Label(name)
+    self.window  = window
+    self.buttons = []
+    self.matches = 0
     self.match   = match
-    self.html = '<a href="{0}#{1}"><tr><td>{1}</td><td>{2}</td></tr></a>'
-    self.file_label = Gtk.Label()
-    self.file_label.set_width_chars(-1)
-    self.file_label.set_ellipsize(True)
-    self.add(self.file_label)
-    self.update()
+    self.name    = name
+    self.grid    = Gtk.Grid()
+    self.label   = Gtk.Label('{}: {}'.format(self.name, self.matches))
+    self.add(self.grid)
 
-  def update(self):
-    label_html = ''
-    for file_uri in sorted(self.match.keys()):
-      label_html += '<b>{}</b><table>'.format(self.name.rpartition('/')[2])
-      for line, text in sorted(elf.match[file_uri]):
-        label_html += self.html.format(file_uri, line, text)
-      label_html += '</table>'
-    self.file_label.set_lines(len(label_html.split('<tr>')))
-    self.file_label.set_markup(label_html)
+  def update(self):#TODO
+    if self.grid.get_child_at(0,0):
+      self.grid.remove_column(0)
+    for button in self.buttons:
+      del button
+    self.buttons = []
+    self.matches = 0
+
+    i=-1
+    for j in range(len(list(self.match.keys()))):
+      file = list(self.match.keys())[j]
+      i += 1
+      if j != 0:
+        self.grid.attach(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL),
+                        0, i, 1, 1)
+        i += 1
+      path = file.partition('://')[2]
+      name = os.path.basename(path)
+      button = Button(self.window, name, file)
+      self.grid.attach(button, 0, i, 1, 1)
+      self.buttons.append(button)
+      for line, comment in self.match[file]:
+        i += 1
+        button = Button(self.window, comment, file, line)
+        self.grid.attach(button, 0, i, 1, 1)
+        self.buttons.append(button)
+        self.matches += 1
+    self.label.set_text('{}: {}'.format(self.name, self.matches))
+    self.show_all()
 
   def get_name(self):
-    return self.name
+    self.label.set_text('{}: {}'.format(self.name, self.matches))
+    return self.label
 
   def set_name(self, name):
-    self.name = Gtk.Label(name)
+    self.name = name
 
   def set_match(self, match):
     self.match = match
 
-  def on_activate_link(page, uri, data):
-    file_uri = uri.rpartition('#')[0]
-    line     = int(uri.rpartition('#')[2])
+  def get_match(self):
+    return self.name
+
+
+class Button(Gtk.EventBox):
+  def __init__(self, window, comment, file=None, line=None):
+    Gtk.EventBox.__init__(self)
+    self.window  = window
+    self.file    = file
+    self.line    = line
+    self.label   = Gtk.Label()
+    self.label.set_justify(Gtk.Justification.LEFT)
+    self.label.set_ellipsize(True)
+    self.label.set_alignment(xalign=0, yalign=0.5)
+    if self.line:
+      if comment:
+        self.label.set_text('{:10}: {}'.format(self.line, comment))
+      else:
+        self.label.set_markup('{:10}: <u>EMPTY</u>'.format(self.line))
+      self.line -= 1
+    else:
+      if comment:
+        self.label.set_text(comment)
+      else:
+        self.label.set_markup('<u>EMPTY</u>')
+      self.line = 0
+    self.add(self.label)
+    self.connect('button_press_event', self.click)
+
+  def click(self, eventbox, event):
     for doc in self.window.get_documents():
-      doc_uri = 'file://%s' % doc.get_uri_for_display()
-      if 'file://"'+doc.get_uri_for_display() == file_uri:
+      if 'file://'+doc.get_uri_for_display() == self.file:
         tab = Gedit.Tab.get_from_document(doc)
         view = tab.get_view()
         self.window.set_active_tab(tab)
-        doc.goto_line(int(line))
+        doc.goto_line(self.line)
         view.scroll_to_cursor()
         return
-    file_uri = Gio.file_new_for_uri(file)
+    file_uri = Gio.file_new_for_uri(self.file)
     self.window.create_tab_from_location(file_uri,
                                          Gedit.encoding_get_current(),
-                                         int(line), 0, False, True)
+                                         self.line, 0, False, True)
