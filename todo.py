@@ -24,19 +24,15 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
   def do_activate(self):
     icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
     self.widget = TodoPanel(self.window, self.matches)
-    self.scroller = Gtk.ScrolledWindow()
-    self.scroller.set_property("hscrollbar-policy", Gtk.PolicyType.AUTOMATIC)
-    self.scroller.set_property("vscrollbar-policy", Gtk.PolicyType.AUTOMATIC)
-    self.scroller.add(self.widget)
-    self.scroller.show_all()
+    self.widget.show_all()
 
     bottom = self.window.get_bottom_panel()
-    bottom.add_item(self.scroller, "TodoBottomPanel", _("TODO List"), icon)
-    bottom.activate_item(self.scroller)
+    bottom.add_item(self.widget, "TodoBottomPanel", _("TODO List"), icon)
+    bottom.activate_item(self.widget)
 
   def do_deactivate(self):
     bottom = self.window.get_bottom_panel()
-    bottom.remove_item(self.scroller)
+    bottom.remove_item(self.widget)
 
   def do_create_configure_widget(self):
     pass
