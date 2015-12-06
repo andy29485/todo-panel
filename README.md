@@ -1,4 +1,4 @@
-# TODO panel
+# TODO panel v1.0.0
 Gedit3 plugin that lists all TODO comments and their messages in the side or
 bottom panel
 Idea for plugin was taken from [this] (https://github.com/iromli/gedit-todo)
@@ -7,14 +7,24 @@ obsolete plugin.
 ## Authors/Contributors
 - Andriy Zasypkin
 
-## TODO
+## Instructions
+1. Enable plugin
+2. Open files
+3. Look at panel
+4. Click on the item that you want to go to
 
-###### Get it to work...
-- links to files
-- links to comments - line in file
+This plugin automatically scans all the directories of the open files
+for files that have allowed extensions. Then looks for defined keywords,
+such as TODO and FIXME(must be all caps), and creates links to those
+files/lines.
+
+## Screen shots
+![Image of panal](/screenshots/1.png?raw=true "1")
 
 ###### Make it look nice
-- but first, get it to work
+- colours?
+- sizes?
+- spacing?
 
 ###### Allow for configuration
 - switch between the bottom and side panels
