@@ -77,7 +77,6 @@ class Page(Gtk.ScrolledWindow):
   def get_match(self):
     return self.name
 
-
 class Button(Gtk.EventBox):
   def __init__(self, window, comment, file=None, line=None):
     Gtk.EventBox.__init__(self)

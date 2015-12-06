@@ -3,7 +3,6 @@
 from gi.repository import GObject, Gedit, Gtk, PeasGtk
 import os, re
 from widget import TodoPanel
-from config import ConfigurationWidget
 
 class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
   __gtype_name__      = 'TodoPanel'
