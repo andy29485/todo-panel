@@ -4,13 +4,13 @@ from gi.repository import Gtk, Gio, WebKit
 import os
 
 class TodoPanel(Gtk.Notebook):
-  def __init__(self, window, matches):
+  def __init__(self, window, matches, keys):
     Gtk.Notebook.__init__(self)
     self.window  = window
     self.matches = matches
     self.pages = []
 
-    for match in matches.keys():
+    for match in keys:
       page = Page(match, matches[match])
       self.pages.append(page)
       self.append_page(page, page.get_name())

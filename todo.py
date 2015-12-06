@@ -23,7 +23,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
 
   def do_activate(self):
     icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
-    self.widget = TodoPanel(self.window, self.matches)
+    self.widget = TodoPanel(self.window, self.matches, self.allowed_types)
     self.widget.show_all()
 
     bottom = self.window.get_bottom_panel()
