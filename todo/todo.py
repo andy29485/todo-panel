@@ -50,7 +50,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     l1 = [doc.get_uri_for_display().rpartition('/')[0]
           for doc in self.window.get_documents()]
     l1 = list(set(l1))
-    l2 = l1[:]
+    print(l1)
+    l2 = [path for path in l1 if os.path.exists(path)]
 
     minus = 0
 
