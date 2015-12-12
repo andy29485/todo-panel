@@ -13,7 +13,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
   allowed_extensions  = 'java php py c h cpp hpp c++ html'
   allowed_types       = 'TODO FIXME NOTE IMPROVE OPTIMIZE REFACTOR'
   matches             = {}
-  SettingsKey         = 'org.gnome.gedit.plugins.todo_list'
+  settings            = {'font':'Ubuntu Mono', 'size':14, 'spacing':12}
 
   def __init__(self):
     GObject.Object.__init__(self)
@@ -22,11 +22,11 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
     for i in self.allowed_types:
       self.matches[i] = {}
     self.widget = None
-    self.settings = Gio.Settings(self.SettingsKey)
 
   def do_activate(self):
     icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
-    self.widget = TodoPanel(self.window, self.matches, self.allowed_types)
+    self.widget = TodoPanel(self.window, self.matches,
+                            self.allowed_types, self.settings)
     self.widget.show_all()
 
     bottom = self.window.get_bottom_panel()
