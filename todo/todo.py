@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-from gi.repository import GObject, Gedit, Gtk, PeasGtk
+from gi.repository import GObject, Gedit, Gtk
 import os, re
 from widget import TodoPanel
-from config import ConfigurationWidget
 
-class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
+class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   __gtype_name__      = 'TodoPanel'
   window              = GObject.property(type=Gedit.Window)
   config              = {''} #TODO this is not used
@@ -36,10 +35,6 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
   def do_deactivate(self):
     bottom = self.window.get_bottom_panel()
     bottom.remove_item(self.widget)
-
-  def do_create_configure_widget(self):
-    widget = ConfigurationWidget(self.settings)
-    return widget
 
   def do_update_state(self):
     self.update_dirs()
