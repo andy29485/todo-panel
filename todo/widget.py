@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk, Gio, Gedit
-import os
+from gi.repository import Gtk, Gdk, Gio, Gedit
+import os, cgi
 
 class TodoPanel(Gtk.Notebook):
   def __init__(self, window, matches, keys, settings):
@@ -33,7 +33,7 @@ class Page(Gtk.ScrolledWindow):
     self.grid     = Gtk.Grid()
     self.label    = Gtk.Label('{}: {}'.format(self.name, self.matches))
     self.settings = settings
-    self.grid.set_row_spacing(self.settings['spacing'])
+    #self.grid.set_row_spacing(self.settings['spacing'])
     self.add(self.grid)
 
   def update(self):#TODO
@@ -89,20 +89,40 @@ class Button(Gtk.EventBox):
     self.settings = settings
     self.label.set_justify(Gtk.Justification.LEFT)
     self.label.set_ellipsize(True)
+    self.label.set_padding(0, self.settings['spacing'])
     self.label.set_alignment(xalign=0, yalign=0.5)
+    css_provider = Gtk.CssProvider()
+    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color(red=255,green=255,blue=255))
+    gtk3Css = b'''GtkEventBox {
+                    border:@bg_color;
+                    background: #FFFFFF;
+                  }
+                  GtkEventBox:hover {
+                    color:@fg_color;
+                    background: #AAAAAA;
+                    -unico-inner-stroke-width: 0;
+                  }'''
+    css_provider.load_from_data(gtk3Css)
+    screen = Gdk.Screen.get_default()
+    context = Gtk.StyleContext()
+    context.add_provider_for_screen(screen, css_provider,
+                                    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    comment = cgi.escape(comment)
     if self.line:
       if comment:
-        self.label.set_text('<span font="{} {}">{:10}: {}</span>'.format(
+        self.label.set_markup('<span font="{} {}">{:10}: {}</span>'.format(
           self.settings['font'], self.settings['size'], self.line, comment))
       else:
-        self.label.set_markup('<span font="{} {}">{:10}:<u>{}</u><span>'.format(
-          self.settings['font'], self.settings['size'], self.line, ' EMPTY'))
+        self.label.set_markup('<span font="{} {}">{:10}: <u>{}></span>'.format(
+          self.settings['font'], self.settings['size'], self.line, 'EMPTY</u'))
       self.line -= 1
     else:
       if comment:
-        self.label.set_text(comment)
+        self.label.set_markup('<span font="{} {}">{}</span>'.format(
+          self.settings['font'], self.settings['size'], comment))
       else:
-        self.label.set_markup('<u>EMPTY</u>')
+        self.label.set_markup('<span font="{} {}"><u>EMPTY</u></span>'.format(
+          self.settings['font'], self.settings['size']))
       self.line = 0
     self.add(self.label)
     self.connect('button_press_event', self.click)
