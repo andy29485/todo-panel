@@ -12,7 +12,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   allowed_extensions  = 'java php py c h cpp hpp c++ html'
   allowed_types       = 'TODO FIXME NOTE IMPROVE OPTIMIZE REFACTOR'
   matches             = {}
-  settings            = {'font':'Ubuntu Mono', 'size':14, 'spacing':12}
+  settings            = {'font':'Ubuntu Mono', 'size':11, 'spacing':2}
 
   def __init__(self):
     GObject.Object.__init__(self)

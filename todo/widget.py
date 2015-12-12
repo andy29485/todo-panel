@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+  #!/usr/bin/env python3
 
 from gi.repository import Gtk, Gdk, Gio, Gedit
 import os, cgi
@@ -91,22 +91,7 @@ class Button(Gtk.EventBox):
     self.label.set_ellipsize(True)
     self.label.set_padding(0, self.settings['spacing'])
     self.label.set_alignment(xalign=0, yalign=0.5)
-    css_provider = Gtk.CssProvider()
-    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color(red=255,green=255,blue=255))
-    gtk3Css = b'''GtkEventBox {
-                    border:@bg_color;
-                    background: #FFFFFF;
-                  }
-                  GtkEventBox:hover {
-                    color:@fg_color;
-                    background: #AAAAAA;
-                    -unico-inner-stroke-width: 0;
-                  }'''
-    css_provider.load_from_data(gtk3Css)
-    screen = Gdk.Screen.get_default()
-    context = Gtk.StyleContext()
-    context.add_provider_for_screen(screen, css_provider,
-                                    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#FFF')[1])
     comment = cgi.escape(comment)
     if self.line:
       if comment:
@@ -126,6 +111,14 @@ class Button(Gtk.EventBox):
       self.line = 0
     self.add(self.label)
     self.connect('button_press_event', self.click)
+    self.connect('enter-notify-event', self.colour_h)
+    self.connect('leave-notify-event', self.colour_n)
+
+  def colour_n(self, eventbox, event):
+    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#FFF')[1])
+
+  def colour_h(self, eventbox, event):
+    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#DDD')[1])
 
   def click(self, eventbox, event):
     for doc in self.window.get_documents():
