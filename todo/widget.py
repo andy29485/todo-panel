@@ -1,17 +1,17 @@
-#!/usr/bin/env python3
+  #!/usr/bin/env python3
 
-from gi.repository import Gtk, Gio, Gedit
-import os
+from gi.repository import Gtk, Gdk, Gio, Gedit
+import os, cgi
 
 class TodoPanel(Gtk.Notebook):
-  def __init__(self, window, matches, keys):
+  def __init__(self, window, matches, keys, settings):
     Gtk.Notebook.__init__(self)
     self.window  = window
     self.matches = matches
     self.pages = []
 
     for match in keys:
-      page = Page(match, matches[match], self.window)
+      page = Page(match, matches[match], self.window, settings)
       self.pages.append(page)
       self.append_page(page, page.get_name())
 
@@ -23,15 +23,17 @@ class TodoPanel(Gtk.Notebook):
     self.show()
 
 class Page(Gtk.ScrolledWindow):
-  def __init__(self, name="", match={}, window=None):
+  def __init__(self, name, match, window, settings):
     Gtk.ScrolledWindow.__init__(self)
-    self.window  = window
-    self.buttons = []
-    self.matches = 0
-    self.match   = match
-    self.name    = name
-    self.grid    = Gtk.Grid()
-    self.label   = Gtk.Label('{}: {}'.format(self.name, self.matches))
+    self.window   = window
+    self.buttons  = []
+    self.matches  = 0
+    self.match    = match
+    self.name     = name
+    self.grid     = Gtk.Grid()
+    self.label    = Gtk.Label('{}: {}'.format(self.name, self.matches))
+    self.settings = settings
+    #self.grid.set_row_spacing(self.settings['spacing'])
     self.add(self.grid)
 
   def update(self):#TODO
@@ -52,12 +54,12 @@ class Page(Gtk.ScrolledWindow):
         i += 1
       path = file.partition('://')[2]
       name = os.path.basename(path)
-      button = Button(self.window, name, file)
+      button = Button(self.window, self.settings, name, file)
       self.grid.attach(button, 0, i, 1, 1)
       self.buttons.append(button)
       for line, comment in self.match[file]:
         i += 1
-        button = Button(self.window, comment, file, line)
+        button = Button(self.window, self.settings, comment, file, line)
         self.grid.attach(button, 0, i, 1, 1)
         self.buttons.append(button)
         self.matches += 1
@@ -77,31 +79,46 @@ class Page(Gtk.ScrolledWindow):
   def get_match(self):
     return self.name
 
-
 class Button(Gtk.EventBox):
-  def __init__(self, window, comment, file=None, line=None):
+  def __init__(self, window, settings, comment, file=None, line=None):
     Gtk.EventBox.__init__(self)
-    self.window  = window
-    self.file    = file
-    self.line    = line
-    self.label   = Gtk.Label()
+    self.window   = window
+    self.file     = file
+    self.line     = line
+    self.label    = Gtk.Label()
+    self.settings = settings
     self.label.set_justify(Gtk.Justification.LEFT)
     self.label.set_ellipsize(True)
+    self.label.set_padding(0, self.settings['spacing'])
     self.label.set_alignment(xalign=0, yalign=0.5)
+    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#FFF')[1])
+    comment = cgi.escape(comment)
     if self.line:
       if comment:
-        self.label.set_text('{:10}: {}'.format(self.line, comment))
+        self.label.set_markup('<span font="{} {}">{:10}: {}</span>'.format(
+          self.settings['font'], self.settings['size'], self.line, comment))
       else:
-        self.label.set_markup('{:10}: <u>EMPTY</u>'.format(self.line))
+        self.label.set_markup('<span font="{} {}">{:10}: <u>{}></span>'.format(
+          self.settings['font'], self.settings['size'], self.line, 'EMPTY</u'))
       self.line -= 1
     else:
       if comment:
-        self.label.set_text(comment)
+        self.label.set_markup('<span font="{} {}">{}</span>'.format(
+          self.settings['font'], self.settings['size'], comment))
       else:
-        self.label.set_markup('<u>EMPTY</u>')
+        self.label.set_markup('<span font="{} {}"><u>EMPTY</u></span>'.format(
+          self.settings['font'], self.settings['size']))
       self.line = 0
     self.add(self.label)
     self.connect('button_press_event', self.click)
+    self.connect('enter-notify-event', self.colour_h)
+    self.connect('leave-notify-event', self.colour_n)
+
+  def colour_n(self, eventbox, event):
+    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#FFF')[1])
+
+  def colour_h(self, eventbox, event):
+    self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#DDD')[1])
 
   def click(self, eventbox, event):
     for doc in self.window.get_documents():

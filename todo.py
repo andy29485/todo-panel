@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-from gi.repository import GObject, Gedit, Gtk
+from gi.repository import GObject, Gedit, Gtk, PeasGtk
 import os, re
 from widget import TodoPanel
 
-class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
+class TodoPlugin(GObject.Object, Gedit.WindowActivatable, PeasGtk.Configurable):
   __gtype_name__      = 'TodoPanel'
   window              = GObject.property(type=Gedit.Window)
   config              = {''} #TODO this is not used
@@ -12,7 +12,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   allowed_extensions  = 'java php py c h cpp hpp c++ html'
   allowed_types       = 'TODO FIXME NOTE IMPROVE OPTIMIZE REFACTOR'
   matches             = {}
-  settings            = {'font':'Ubuntu Mono', 'size':11, 'spacing':2}
+  SettingsKey         = 'org.gnome.gedit.plugins.todo_list'
 
   def __init__(self):
     GObject.Object.__init__(self)
@@ -21,11 +21,11 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     for i in self.allowed_types:
       self.matches[i] = {}
     self.widget = None
+    self.settings = Gio.Settings(self.SettingsKey)
 
   def do_activate(self):
     icon = Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU)
-    self.widget = TodoPanel(self.window, self.matches,
-                            self.allowed_types, self.settings)
+    self.widget = TodoPanel(self.window, self.matches, self.allowed_types)
     self.widget.show_all()
 
     bottom = self.window.get_bottom_panel()
@@ -35,6 +35,10 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   def do_deactivate(self):
     bottom = self.window.get_bottom_panel()
     bottom.remove_item(self.widget)
+
+  def do_create_configure_widget(self):
+    widget = ConfigurationWidget(self.settings)
+    return widget
 
   def do_update_state(self):
     self.update_dirs()
@@ -48,8 +52,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     l1 = [doc.get_uri_for_display().rpartition('/')[0]
           for doc in self.window.get_documents()]
     l1 = list(set(l1))
-    print(l1)
-    l2 = [path for path in l1 if os.path.exists(path)]
+    l2 = l1[:]
 
     minus = 0
 
