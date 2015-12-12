@@ -23,13 +23,16 @@ files/lines.
 
 ## TODO
 
-###### Make it look nice
-- colours?
-- sizes?
-- spacing?
+###### [ ] Improve efficiency
+[ ] less pointless scanning
 
-###### Allow for configuration
-- switch between the bottom and side panels
-- add(and choose) colour for tabs
-- add custom tabs
-- add extensions to whitelist
+###### [x] Make it look nice
+[x] colours?
+[x] sizes?
+[x] spacing?
+
+###### [ ] Allow for configuration
+[ ] switch between the bottom and side panels
+[ ] add(and choose) colour for tabs
+[ ] add custom tabs
+[ ] add extensions to whitelist
