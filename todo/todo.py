@@ -87,10 +87,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     if self.widget:
       #get dirs that need to be checked
       self.update_dirs()
-      print(self.dirs)
       #get files that need to be checked
       self.update_files()
-      print(self.files)
       #scan files
       self.walk()
       #update panel
@@ -138,7 +136,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   def update_dirs(self):
     self.files = [doc.get_uri_for_display()
                   for doc in self.window.get_documents()]
-    self.dirs = [f.rpartition('/')[0] for f in self.files)]
+    self.dirs = [f.rpartition('/')[0] for f in self.files]
     self.dirs = list(set([i for i in self.dirs if i]))
 
     def matches(dirs, name):
@@ -166,13 +164,13 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
       else:
         diff = compute_diff(tmp, {'files':[], 'subdirs':[], 'index':[]})
       self.dir_hash[d] = tmp
-      ckeck += [i for i in diff['check']
+      check += [i for i in diff['check']
                      if i.rpartition('.')[2] in self.allowed_extensions]
       for tag in self.matches.keys():
         self.matches[tag] = {key: value for key, value in
                              self.matches[tag].items() if
                              key.partition('file://')[2] not in diff['remove']}
-    self.files = list(set(ckeck))
+    self.files = list(set(check))
 
   def walk(self):
     match_re = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format(
