@@ -1,0 +1,44 @@
+[1mdiff --git a/todo/todo.py b/todo/todo.py[m
+[1mindex 7e3e037..8359ffb 100644[m
+[1m--- a/todo/todo.py[m
+[1m+++ b/todo/todo.py[m
+[36m@@ -86,8 +86,6 @@[m [mclass TodoPlugin(GObject.Object, Gedit.WindowActivatable):[m
+ [m
+   def do_update_state(self):[m
+     if self.widget:[m
+[31m-      #get dirs that need to be checked[m
+[31m-      self.update_dirs()[m
+       #get files that need to be checked[m
+       self.update_files()[m
+       #scan files[m
+[36m@@ -95,22 +93,6 @@[m [mclass TodoPlugin(GObject.Object, Gedit.WindowActivatable):[m
+       #update panel[m
+       self.widget.update()[m
+ [m
+[31m-  def update_dirs(self):[m
+[31m-    l1 = [doc.get_uri_for_display().rpartition('/')[0][m
+[31m-          for doc in self.window.get_documents()][m
+[31m-    l1 = list(set(l1))[m
+[31m-    print(l1)[m
+[31m-    l2 = [path for path in l1 if os.path.exists(path)][m
+[31m-[m
+[31m-    minus = 0[m
+[31m-[m
+[31m-    for i in range(len(l1)):[m
+[31m-      for j in range(len(l2)):[m
+[31m-        if l2[j].startswith(l1[i]) and l1[i] != l1[j]:[m
+[31m-          l2.remove(l2[j-minus])[m
+[31m-          minus += 1[m
+[31m-    self.dirs = l2[m
+[31m-[m
+   def update_files(self):[m
+     removed    = [][m
+     self.files = [][m
+[36m@@ -128,6 +110,7 @@[m [mclass TodoPlugin(GObject.Object, Gedit.WindowActivatable):[m
+         self.matches[tag] = {key: value for key, value[m
+                              in self.matches[tag].items()[m
+                              if value not in removed}[m
+[32m+[m[32m    self.files = list(set(self.files))[m
+ [m
+   def walk(self):[m
+     match_re = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format([m

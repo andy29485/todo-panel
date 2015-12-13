@@ -4,8 +4,6 @@ from gi.repository import GObject, Gedit, Gtk
 import os, re
 from widget import TodoPanel
 
-import os
-
 #next two functions shamlessly taken from(and modified):
 #https://thomassileo.name/blog/2013/12/12/tracking-changes-in-directories-with-python
 #also see:
@@ -22,21 +20,22 @@ def compute_dir_index(path, ext=[]):
   items   = 0
 
   for root, dirs, filenames in os.walk(path):
-    if items < 300:
+    if items < 500:
       for subdir in dirs:
-        if subdir not in ['.git']:
+        if subdir not in ['.git'] and not subdir.startswith('.'):
           subdirs.append(os.path.relpath(os.path.join(root, subdir), path))
+        items += 1
 
       for f in filenames:
-        if not ext or f.rpartition(os.path.sep)[2] in ext:
-          files.append(os.path.relpath(os.path.join(root, f), path))
-          items += 1
+        if not ext or f.rpartition('.')[2] in ext:
+          files.append(os.path.realpath(os.path.join(root, f)))
+        items += 1
     else:
       break
 
   index = {}
   for f in files:
-    index[f] = os.path.getmtime(os.path.join(path, files[0]))
+    index[f] = os.path.getmtime(f)
 
   return dict(files=files, subdirs=subdirs, index=index)
 
@@ -88,28 +87,19 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     if self.widget:
       #get dirs that need to be checked
       self.update_dirs()
+      print(self.dirs)
       #get files that need to be checked
       self.update_files()
+      print(self.files)
       #scan files
       self.walk()
       #update panel
       self.widget.update()
 
   def update_dirs(self):
-    l1 = [doc.get_uri_for_display().rpartition('/')[0]
-          for doc in self.window.get_documents()]
-    l1 = list(set(l1))
-    print(l1)
-    l2 = [path for path in l1 if os.path.exists(path)]
-
-    minus = 0
-
-    for i in range(len(l1)):
-      for j in range(len(l2)):
-        if l2[j].startswith(l1[i]) and l1[i] != l1[j]:
-          l2.remove(l2[j-minus])
-          minus += 1
-    self.dirs = l2
+    self.dirs = [doc.get_uri_for_display().rpartition('/')[0]
+                  for doc in self.window.get_documents()]
+    self.dirs = list(set([i for i in self.dirs if i]))
 
   def update_files(self):
     removed    = []
@@ -117,17 +107,18 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     for d in self.dirs:
       tmp = compute_dir_index(d, self.allowed_extensions)
       if d in self.dir_hash.keys():
-        diff = compute_diff(self.dir_hash[d], tmp)
+        diff = compute_diff(tmp, self.dir_hash[d])
       else:
-        diff = compute_diff({'files':[], 'subdirs':[], 'index':[]}, tmp)
+        diff = compute_diff(tmp, {'files':[], 'subdirs':[], 'index':[]})
       self.dir_hash[d] = tmp
       removed    += diff['remove']
       self.files += [i for i in diff['check']
-                     if i.rpartition(os.path.sep)[2] in self.allowed_extensions]
+                     if i.rpartition('.')[2] in self.allowed_extensions]
       for tag in self.matches.keys():
         self.matches[tag] = {key: value for key, value
                              in self.matches[tag].items()
                              if value not in removed}
+    self.files = list(set(self.files))
 
   def walk(self):
     match_re = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format(
