@@ -43,6 +43,15 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     self.walk()
     if self.widget:
       self.widget.update()
+    bottom = self.window.get_bottom_panel()
+    bottom.activate_item(self.widget)
+
+  def on_tab_removed(self, window, tab, data=None):
+    self.do_update_state()
+
+  def do_create_configure_widget(self):
+    widget = ConfigurationWidget(self.settings)
+    return widget
 
   def save_settings(self):
     config = os.path.join(os.path.dirname(__file__), 'config.xml')
