@@ -101,8 +101,23 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
                   for doc in self.window.get_documents()]
     self.dirs = list(set([i for i in self.dirs if i]))
 
+    def matches(dirs, name):
+      for d in dirs:
+        if name.startswith(d):
+          return True
+      return False
+
+    remove = []
+    for tag in self.matches.keys():
+      for f in self.matches[tag]:
+        name = f.partition('file://')[2]
+        if not matches(self.dirs, name):
+          remove.append(f)
+      self.matches[tag] = {key: value for key, value
+                             in self.matches[tag].items()
+                             if key not in remove}
+
   def update_files(self):
-    removed    = []
     self.files = []
     for d in self.dirs:
       tmp = compute_dir_index(d, self.allowed_extensions)
@@ -111,13 +126,12 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
       else:
         diff = compute_diff(tmp, {'files':[], 'subdirs':[], 'index':[]})
       self.dir_hash[d] = tmp
-      removed    += diff['remove']
       self.files += [i for i in diff['check']
                      if i.rpartition('.')[2] in self.allowed_extensions]
       for tag in self.matches.keys():
-        self.matches[tag] = {key: value for key, value
-                             in self.matches[tag].items()
-                             if value not in removed}
+        self.matches[tag] = {key: value for key, value in
+                             self.matches[tag].items() if
+                             key.partition('file://')[2] not in diff['remove']}
     self.files = list(set(self.files))
 
   def walk(self):
