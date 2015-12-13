@@ -23,16 +23,17 @@ files/lines.
 
 ## TODO
 
-###### [ ] Improve efficiency
-[ ] less pointless scanning
+##### Improve efficiency
+- [ ] save list of last scanned dirs/files
+- [ ] less pointless scanning
 
-###### [x] Make it look nice
-[x] colours?
-[x] sizes?
-[x] spacing?
+##### Make it look nice
+- [x] colours?
+- [x] sizes?
+- [x] spacing?
 
-###### [ ] Allow for configuration
-[ ] switch between the bottom and side panels
-[ ] add(and choose) colour for tabs
-[ ] add custom tabs
-[ ] add extensions to whitelist
+##### Allow for configuration
+- [ ] switch between the bottom and side panels
+- [ ] add(and choose) colour for tabs
+- [ ] add custom tabs
+- [ ] add extensions to whitelist
