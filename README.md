@@ -24,8 +24,10 @@ files/lines.
 ## TODO
 
 ##### Improve efficiency
-- [ ] save list of last scanned dirs/files
-- [ ] less pointless scanning
+- [x] save list of last scanned dirs/files
+- [x] less pointless scanning
+- [ ] remove things that are closed
+  - [ ] save list of old dirs
 
 ##### Make it look nice
 - [x] hover
