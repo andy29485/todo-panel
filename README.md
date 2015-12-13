@@ -28,11 +28,16 @@ files/lines.
 - [ ] less pointless scanning
 
 ##### Make it look nice
-- [x] colours?
-- [x] sizes?
-- [x] spacing?
+- [x] hover
+- [ ] colours
+  - [ ] hover colours
+  - [ ] tab colours
+- [x] sizes
+- [x] spacing
+- [ ] stay on panel after update
 
 ##### Allow for configuration
+- [ ] use an xml file
 - [ ] switch between the bottom and side panels
 - [ ] add(and choose) colour for tabs
 - [ ] add custom tabs
