@@ -4,11 +4,55 @@ from gi.repository import GObject, Gedit, Gtk
 import os, re
 from widget import TodoPanel
 
+import os
+
+#next two functions shamlessly taken from(and modified):
+#https://thomassileo.name/blog/2013/12/12/tracking-changes-in-directories-with-python
+#also see:
+#https://github.com/tsileo/dirtools
+
+def compute_dir_index(path):
+  """ Return a tuple containing:
+  - list of files (relative to path)
+  - lisf of subdirs (relative to path)
+  - a dict: filepath => last.
+  """
+  files = []
+  subdirs = []
+
+  for root, dirs, filenames in os.walk(path):
+    depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
+    if depth < 3:
+      for subdir in dirs:
+        if subdir not in ['.git']:
+          subdirs.append(os.path.relpath(os.path.join(root, subdir), path))
+
+      for f in filenames:
+        files.append(os.path.relpath(os.path.join(root, f), path))
+
+  index = {}
+  for f in files:
+    index[f] = os.path.getmtime(os.path.join(path, files[0]))
+
+  return dict(files=files, subdirs=subdirs, index=index)
+
+def compute_diff(dir_base, dir_cmp):
+  data = {}
+  data['remove'] = list(set(dir_cmp['files']) - set(dir_base['files']))
+  data['check'] = list(set(dir_base['files']) - set(dir_cmp['files']))
+
+  for f in set(dir_cmp['files']).intersection(set(dir_base['files'])):
+    if dir_base['index'][f] != dir_cmp['index'][f]:
+      data['check'].append(f)
+
+  return data
+
 class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   __gtype_name__      = 'TodoPanel'
   window              = GObject.property(type=Gedit.Window)
-  config              = {''} #TODO this is not used
+  dir_hash            = {}
   dirs                = []
+  files               = []
   allowed_extensions  = 'java php py c h cpp hpp c++ html'
   allowed_types       = 'TODO FIXME NOTE IMPROVE OPTIMIZE REFACTOR'
   matches             = {}
@@ -37,11 +81,14 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     bottom.remove_item(self.widget)
 
   def do_update_state(self):
-    self.update_dirs()
-    for i in self.allowed_types:
-      self.matches[i] = {}
-    self.walk()
     if self.widget:
+      #get dirs that need to be checked
+      self.update_dirs()
+      #get files that need to be checked
+      self.update_files()
+      #scan files
+      self.walk()
+      #update panel
       self.widget.update()
 
   def update_dirs(self):
@@ -60,21 +107,35 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
           minus += 1
     self.dirs = l2
 
-  def walk(self):
-    matchre = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format(
-                          '|'.join(self.allowed_types))
+  def update_files(self):
+    removed    = []
+    self.files = []
     for d in self.dirs:
-      for root, dirs, files in os.walk(d):
-        for file in files:
-          for ext in self.allowed_extensions:
-            if file.endswith('.'+ext):
-              fi = os.path.join(root, file)
-              with open(fi, 'r') as f:
-                fi = 'file://'+fi
-                line = 0
-                for i in re.findall(matchre, f.read(), re.DOTALL|re.MULTILINE):
-                  line += len(i[0].split('\n'))
-                  if fi in self.matches[i[1]].keys():
-                    self.matches[i[1]][fi].append((line, i[3]))
-                  else:
-                    self.matches[i[1]][fi] = [(line, i[3])]
+      tmp = compute_dir_index(d)
+      if d in self.dir_hash.keys():
+        diff = compute_diff(self.dir_hash[d], tmp)
+      else:
+        diff = compute_diff({'files':[], 'subdirs':[], 'index':[]}, tmp)
+      self.dir_hash[d] = tmp
+      removed    += diff['remove']
+      self.files += [i for i in diff['check']
+                     if i.rpartition(os.path.sep)[2] in self.allowed_extensions]
+      for tag in self.matches.keys():
+        self.matches[tag] = {key: value for key, value
+                             in self.matches[tag].items()
+                             if value not in removed}
+
+  def walk(self):
+    match_re = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format(
+                          '|'.join(self.allowed_types))
+    for fi in self.file:
+      fi = os.path.join(root, file)
+      with open(fi, 'r') as f:
+        fi = 'file://'+fi
+        line = 0
+        for i in re.findall(match_re, f.read(), re.DOTALL|re.MULTILINE):
+          line += len(i[0].split('\n'))
+          if fi in self.matches[i[1]].keys():
+            self.matches[i[1]][fi].append((line, i[3]))
+          else:
+            self.matches[i[1]][fi] = [(line, i[3])]
