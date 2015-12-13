@@ -2,6 +2,7 @@
 
 from gi.repository import GObject, Gedit, Gtk
 import os, re
+from xml.etree import ElementTree, cElementTree
 from widget import TodoPanel
 
 class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
@@ -9,15 +10,15 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   window              = GObject.property(type=Gedit.Window)
   config              = {''} #TODO this is not used
   dirs                = []
-  allowed_extensions  = 'java php py c h cpp hpp c++ html'
-  allowed_types       = 'TODO FIXME NOTE IMPROVE OPTIMIZE REFACTOR'
   matches             = {}
-  settings            = {'font':'Ubuntu Mono', 'size':11, 'spacing':2}
+  settings            = {}
 
   def __init__(self):
     GObject.Object.__init__(self)
-    self.allowed_extensions = re.split('[\\s\\.;\\|:]', self.allowed_extensions)
-    self.allowed_types      = re.split('[\\s\\.;\\|:]', self.allowed_types)
+    self.load_settings()
+    self.allowed_extensions = re.split('[\\s\\.;\\|:]',
+                                self.settings['extensions'])
+    self.allowed_types      = re.split('[\\s\\.;\\|:]', self.settings['types'])
     for i in self.allowed_types:
       self.matches[i] = {}
     self.widget = None
@@ -43,6 +44,32 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     self.walk()
     if self.widget:
       self.widget.update()
+
+  def save_settings(self):
+    config = os.join(os.path.dirname(__file__), 'config.xml')
+    root = cElementTree.Element("settings")
+
+    with open(config, 'rt') as f:
+      tree = ElementTree.parse(f)
+
+    for node in tree.iter():
+      name = node.attrib.get('name')
+      default = node.attrib.get('default')
+      cElementTree.SubElement(root, "setting", name=name,
+                              value=self.settings[name], default=default)
+    tree = cElementTree.ElementTree(root)
+    tree.write(config)
+
+  def load_settings(self):
+    self.settings = {}
+    config = os.join(os.path.dirname(__file__), 'config.xml')
+    with open(config, 'rt') as f:
+      tree = ElementTree.parse(f)
+    for node in tree.iter():
+      name = node.attrib.get('name')
+      value = node.attrib.get('value')
+      default = node.attrib.get('default')
+      self.settings[name] = value if value else default
 
   def update_dirs(self):
     l1 = [doc.get_uri_for_display().rpartition('/')[0]
