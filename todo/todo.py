@@ -8,7 +8,6 @@ from widget import TodoPanel
 class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   __gtype_name__      = 'TodoPanel'
   window              = GObject.property(type=Gedit.Window)
-  config              = {''} #TODO this is not used
   dirs                = []
   matches             = {}
   settings            = {}
@@ -46,7 +45,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
       self.widget.update()
 
   def save_settings(self):
-    config = os.join(os.path.dirname(__file__), 'config.xml')
+    config = os.path.join(os.path.dirname(__file__), 'config.xml')
     root = cElementTree.Element("settings")
 
     with open(config, 'rt') as f:
@@ -62,13 +61,17 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
 
   def load_settings(self):
     self.settings = {}
-    config = os.join(os.path.dirname(__file__), 'config.xml')
+    config = os.path.join(os.path.dirname(__file__), 'config.xml')
     with open(config, 'rt') as f:
       tree = ElementTree.parse(f)
     for node in tree.iter():
-      name = node.attrib.get('name')
-      value = node.attrib.get('value')
-      default = node.attrib.get('default')
+      name    = str(node.attrib.get('name'))
+      value   = str(node.attrib.get('value'))
+      default = str(node.attrib.get('default'))
+      if re.search('\\d+', value):
+        value = int(value)
+      if re.search('\\d+', default):
+        default = int(default)
       self.settings[name] = value if value else default
 
   def update_dirs(self):
