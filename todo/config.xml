@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings>
+  <setting name="side-panel" value="False" default="False"/>
+  <setting name="extensions" value="java php py c h cpp hpp c++ html" default="java php py c h cpp hpp c++ html"/>
+  <setting name="types" value="TODO FIXME NOTE IMPROVE OPTIMIZE REFACTOR" default="TODO FIXME NOTE IMPROVE OPTIMIZE REFACTOR"/>
+  <setting name="tab-colours" value="" default=""/>
+  <setting name="font" value="Ubuntu Mono" default="Ubuntu Mono"/>
+  <setting name="size" value="11" default="11"/>
+  <setting name="spacing" value="2" default="2"/>
+</settings>
