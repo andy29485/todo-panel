@@ -36,11 +36,11 @@ files/lines.
   - [ ] tab colours
 - [x] sizes
 - [x] spacing
-- [ ] stay on panel after update
+- [x] stay on panel after update
 
 ##### Allow for configuration
-- [ ] use an xml file
+- [x] use an xml file
 - [ ] switch between the bottom and side panels
 - [ ] add(and choose) colour for tabs
-- [ ] add custom tabs
-- [ ] add extensions to whitelist
+- [x] add custom tabs
+- [x] add extensions to whitelist
