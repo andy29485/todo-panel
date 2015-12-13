@@ -128,8 +128,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
   def walk(self):
     match_re = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format(
                           '|'.join(self.allowed_types))
-    for fi in self.file:
-      fi = os.path.join(root, file)
+    for fi in self.files:
       with open(fi, 'r') as f:
         fi = 'file://'+fi
         line = 0
