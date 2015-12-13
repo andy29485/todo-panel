@@ -9,13 +9,12 @@ from widget import TodoPanel
 #also see:
 #https://github.com/tsileo/dirtools
 
-def compute_dir_index(path, ext=[]):
+def compute_dir_index(path, files=[], ext=[]):
   """ Return a tuple containing:
   - list of files (relative to path)
   - lisf of subdirs (relative to path)
   - a dict: filepath => last.
   """
-  files   = []
   subdirs = []
   items   = 0
 
@@ -97,8 +96,9 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
       self.widget.update()
 
   def update_dirs(self):
-    self.dirs = [doc.get_uri_for_display().rpartition('/')[0]
+    self.files = [doc.get_uri_for_display()
                   for doc in self.window.get_documents()]
+    self.dirs = [f.rpartition('/')[0] for f in self.files)]
     self.dirs = list(set([i for i in self.dirs if i]))
 
     def matches(dirs, name):
@@ -118,21 +118,21 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
                              if key not in remove}
 
   def update_files(self):
-    self.files = []
+    check = []
     for d in self.dirs:
-      tmp = compute_dir_index(d, self.allowed_extensions)
+      tmp = compute_dir_index(d, self.files, self.allowed_extensions)
       if d in self.dir_hash.keys():
         diff = compute_diff(tmp, self.dir_hash[d])
       else:
         diff = compute_diff(tmp, {'files':[], 'subdirs':[], 'index':[]})
       self.dir_hash[d] = tmp
-      self.files += [i for i in diff['check']
+      ckeck += [i for i in diff['check']
                      if i.rpartition('.')[2] in self.allowed_extensions]
       for tag in self.matches.keys():
         self.matches[tag] = {key: value for key, value in
                              self.matches[tag].items() if
                              key.partition('file://')[2] not in diff['remove']}
-    self.files = list(set(self.files))
+    self.files = list(set(ckeck))
 
   def walk(self):
     match_re = '^(.*?)({})(:|[ \t]*-)?[ \t]*([^\n]*?)(\n|$)'.format(
