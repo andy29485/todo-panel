@@ -11,24 +11,28 @@ import os
 #also see:
 #https://github.com/tsileo/dirtools
 
-def compute_dir_index(path):
+def compute_dir_index(path, ext=[]):
   """ Return a tuple containing:
   - list of files (relative to path)
   - lisf of subdirs (relative to path)
   - a dict: filepath => last.
   """
-  files = []
+  files   = []
   subdirs = []
+  items   = 0
 
   for root, dirs, filenames in os.walk(path):
-    depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
-    if depth < 3:
+    if items < 300:
       for subdir in dirs:
         if subdir not in ['.git']:
           subdirs.append(os.path.relpath(os.path.join(root, subdir), path))
 
       for f in filenames:
-        files.append(os.path.relpath(os.path.join(root, f), path))
+        if not ext or f.rpartition(os.path.sep)[2] in ext:
+          files.append(os.path.relpath(os.path.join(root, f), path))
+          items += 1
+    else:
+      break
 
   index = {}
   for f in files:
@@ -111,7 +115,7 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
     removed    = []
     self.files = []
     for d in self.dirs:
-      tmp = compute_dir_index(d)
+      tmp = compute_dir_index(d, self.allowed_extensions)
       if d in self.dir_hash.keys():
         diff = compute_diff(self.dir_hash[d], tmp)
       else:
