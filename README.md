@@ -27,7 +27,7 @@ files/lines.
 - [x] save list of last scanned dirs/files
 - [x] less pointless scanning
 - [x] remove things that are closed
-  - ~~[ ] save list of old dirs~~
+  - [ ] ~~save list of old dirs~~
 
 ##### Make it look nice
 - [x] hover
