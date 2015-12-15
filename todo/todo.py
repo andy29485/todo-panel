@@ -145,7 +145,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
 
   def update_dirs(self):
     self.files = [doc.get_uri_for_display()
-                  for doc in self.window.get_documents()]
+                  for doc in self.window.get_documents()
+                  if os.path.exists(doc.get_uri_for_display())]
     self.dirs = [f.rpartition('/')[0] for f in self.files]
     self.dirs = list(set([i for i in self.dirs if i]))
 

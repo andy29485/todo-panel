@@ -1,4 +1,4 @@
-# TODO panel v2.0.1
+# TODO panel v2.0.2
 Gedit3 plugin that lists all TODO comments and their messages in the side or
 bottom panel
 Idea for plugin was taken from [this] (https://github.com/iromli/gedit-todo)
@@ -19,7 +19,7 @@ such as TODO and FIXME(must be all caps), and creates links to those
 files/lines.
 
 ## Screen shots
-![Image of panal](/screenshots/1.png?raw=true "1")
+![Image of panal](/screenshots/2.png?raw=true "2.0.2")
 
 ## TODO
 
