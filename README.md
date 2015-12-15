@@ -41,7 +41,7 @@ files/lines.
 ##### Allow for configuration
 - [x] use an xml file
 - [x] switch between the bottom and side panels
-- config opptions
+- [ ] config options
   - [ ] add(and choose) colour for tabs
   - [ ] add custom tabs
   - [ ] add extensions to whitelist
