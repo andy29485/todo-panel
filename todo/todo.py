@@ -187,9 +187,9 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
                           '|'.join(self.allowed_types))
     for fi in self.files:
       with open(fi, 'r') as f:
+        fi = 'file://'+fi
         for i in self.allowed_types:
           self.matches[i][fi] = []
-        fi = 'file://'+fi
         line = 0
         for i in re.findall(match_re, f.read(), re.DOTALL|re.MULTILINE):
           line += len(i[0].split('\n'))
