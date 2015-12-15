@@ -32,15 +32,18 @@ files/lines.
 ##### Make it look nice
 - [x] hover
 - [ ] colours
-  - [ ] hover colours
+  - [x] hover colours
   - [ ] tab colours
 - [x] sizes
 - [x] spacing
-- [ ] stay on panel after update
+- [x] stay on panel after update
 
 ##### Allow for configuration
-- [ ] use an xml file
-- [ ] switch between the bottom and side panels
-- [ ] add(and choose) colour for tabs
-- [ ] add custom tabs
-- [ ] add extensions to whitelist
+- [x] use an xml file
+- [x] switch between the bottom and side panels
+- config opptions
+  - [ ] add(and choose) colour for tabs
+  - [ ] add custom tabs
+  - [ ] add extensions to whitelist
+  - [ ] hover colours
+  - [ ] tab colours?
