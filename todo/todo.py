@@ -75,13 +75,20 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
                             self.allowed_types, self.settings)
     self.widget.show_all()
 
-    bottom = self.window.get_bottom_panel()
-    bottom.add_item(self.widget, "TodoBottomPanel", _("TODO List"), icon)
-    bottom.activate_item(self.widget)
+    if self.settings['side-panel'].lower() == 'true':
+      panel = self.window.get_side_panel()
+    else:
+      panel = self.window.get_bottom_panel()
+    panel.add_item(self.widget, "TodoBottomPanel", _("TODO List"), icon)
+    panel.activate_item(self.widget)
+    self.do_update_state()
 
   def do_deactivate(self):
-    bottom = self.window.get_bottom_panel()
-    bottom.remove_item(self.widget)
+    if self.settings['side-panel'].lower() == 'true':
+      panel = self.window.get_side_panel()
+    else:
+      panel = self.window.get_bottom_panel()
+    panel.remove_item(self.widget)
 
   def do_update_state(self):
     if self.widget:
@@ -93,8 +100,11 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
       self.walk()
       #update panel
       self.widget.update()
-    bottom = self.window.get_bottom_panel()
-    bottom.activate_item(self.widget)
+    if self.settings['side-panel'].lower() == 'true':
+      panel = self.window.get_side_panel()
+    else:
+      panel = self.window.get_bottom_panel()
+    panel.activate_item(self.widget)
 
   def on_tab_removed(self, window, tab, data=None):
     self.do_update_state()
@@ -177,6 +187,8 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
                           '|'.join(self.allowed_types))
     for fi in self.files:
       with open(fi, 'r') as f:
+        for i in self.allowed_types:
+          self.matches[i][fi] = []
         fi = 'file://'+fi
         line = 0
         for i in re.findall(match_re, f.read(), re.DOTALL|re.MULTILINE):
@@ -185,3 +197,4 @@ class TodoPlugin(GObject.Object, Gedit.WindowActivatable):
             self.matches[i[1]][fi].append((line, i[3]))
           else:
             self.matches[i[1]][fi] = [(line, i[3])]
+        #self.matches[i[1]][fi] = list(set(self.matches[i[1]][fi]))

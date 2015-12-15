@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from gi.repository import Gtk, Gdk, Gio, Gedit
+from gi.repository import Gtk, Gdk, Gio, Gedit, Pango
 import os, cgi
 
 class TodoPanel(Gtk.Notebook):
@@ -9,6 +9,7 @@ class TodoPanel(Gtk.Notebook):
     self.window  = window
     self.matches = matches
     self.pages = []
+    self.set_scrollable(True)
 
     for match in keys:
       page = Page(match, matches[match], self.window, settings)
@@ -37,10 +38,10 @@ class Page(Gtk.ScrolledWindow):
     self.add(self.grid)
 
   def update(self):#TODO
-    if self.grid.get_child_at(0,0):
-      self.grid.remove_column(0)
-    for button in self.buttons:
-      del button
+    for child in self.grid.get_children():
+      self.grid.remove(child)
+      if child in self.buttons:
+        del child
     self.buttons = []
     self.matches = 0
 
@@ -50,17 +51,17 @@ class Page(Gtk.ScrolledWindow):
       i += 1
       if j != 0:
         self.grid.attach(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL),
-                        0, i, 1, 1)
+                        0, i, 2, 1)
         i += 1
       path = file.partition('://')[2]
       name = os.path.basename(path)
       button = Button(self.window, self.settings, name, file)
-      self.grid.attach(button, 0, i, 1, 1)
+      self.grid.attach(button, 0, i, 2, 1)
       self.buttons.append(button)
       for line, comment in self.match[file]:
         i += 1
         button = Button(self.window, self.settings, comment, file, line)
-        self.grid.attach(button, 0, i, 1, 1)
+        self.grid.attach(button, 0, i, 2, 1)
         self.buttons.append(button)
         self.matches += 1
     self.label.set_text('{}: {}'.format(self.name, self.matches))
@@ -88,7 +89,7 @@ class Button(Gtk.EventBox):
     self.label    = Gtk.Label()
     self.settings = settings
     self.label.set_justify(Gtk.Justification.LEFT)
-    self.label.set_ellipsize(True)
+    self.label.set_ellipsize(Pango.EllipsizeMode.END)
     self.label.set_padding(0, self.settings['spacing'])
     self.label.set_alignment(xalign=0, yalign=0.5)
     self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#FFF')[1])
