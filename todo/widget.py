@@ -1,4 +1,4 @@
-  #!/usr/bin/env python3
+#!/usr/bin/env python3
 
 from gi.repository import Gtk, Gdk, Gio, Gedit
 import os, cgi
