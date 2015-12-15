@@ -92,6 +92,7 @@ class Button(Gtk.EventBox):
     self.label.set_ellipsize(Pango.EllipsizeMode.END)
     self.label.set_padding(0, self.settings['spacing'])
     self.label.set_alignment(xalign=0, yalign=0.5)
+    self.set_hexpand(True)
     self.modify_bg(Gtk.StateType.NORMAL, Gdk.Color.parse('#FFF')[1])
     comment = cgi.escape(comment)
     if self.line:
